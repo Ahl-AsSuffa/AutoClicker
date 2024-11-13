@@ -1,0 +1,53 @@
+#include <iostream>
+#include <windows.h>
+
+int main() {
+    setlocale(LC_ALL, "Rus");
+    // Устанавливаем флаг для включения/выключения программы
+    bool enabled = false;
+
+    // Получаем дескриптор окна
+    HWND hwnd = GetDesktopWindow();
+
+    // Получаем контекст устройства
+    HDC hdc = GetDC(hwnd);
+
+    float timer;
+    std::cout << "Введите значение таймера в М/С: ";
+    std::cin >> timer;
+    std::cout << "Готово, нажмите на кнопку B для включения/отключения: " << timer << std::endl;
+
+    // Цикл для выполнения кликов
+    while (true) {
+        // Проверяем, нажата ли кнопка B
+        if (GetAsyncKeyState('B') & 0x8000) {
+            enabled = !enabled; // Инвертируем значение флага
+            if (enabled) {
+                std::cout << "Кликер включен" << std::endl;
+            }
+            else {
+                std::cout << "Кликер выключен" << std::endl;
+            }
+            Sleep(200); // Задержка для предотвращения множественных нажатий
+        }
+
+        // Если кликер включен, выполняем клик
+        if (enabled) {
+            INPUT input = { 0 };
+            input.type = INPUT_MOUSE;
+            input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+            SendInput(1, &input, sizeof(INPUT));
+
+            input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+            SendInput(1, &input, sizeof(INPUT));
+
+            // Задержка между кликами
+            Sleep(static_cast<DWORD>(timer));
+        }
+    }
+
+    // Освобождаем контекст устройства
+    ReleaseDC(hwnd, hdc);
+
+    return 0;
+}
